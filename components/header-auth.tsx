@@ -7,12 +7,14 @@ import { ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/lib/cart-context';
 import { useEffect, useState } from 'react';
+import { useAccountType } from '@/lib/use-account-type';
 
 export default function HeaderAuth() {
   const router = useRouter();
   const supabase = createClient();
   const { totalItems } = useCart();
   const [user, setUser] = useState<any>(null);
+  const accountType = useAccountType();
 
   useEffect(() => {
     const getUser = async () => {
@@ -40,6 +42,7 @@ export default function HeaderAuth() {
     <div className="flex items-center gap-4">
       {user ? (
         <>
+          <span className="text-sm text-muted-foreground">{accountType}</span>
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
@@ -50,6 +53,11 @@ export default function HeaderAuth() {
               )}
             </Button>
           </Link>
+          {user.user_metadata?.role === 'admin' && (
+            <Link href="/admin">
+              <Button variant="ghost">Admin</Button>
+            </Link>
+          )}
           <Link href="/orders">
             <Button variant="ghost">Vermerkt</Button>
           </Link>
