@@ -34,7 +34,7 @@ interface OrderWithMeal {
                 price: number;
             };
         };
-    };
+    }[];
 }
 
 export default function OrdersPage() {
@@ -74,17 +74,20 @@ export default function OrdersPage() {
                 if (error) throw error;
 
                 // Transform the data to match our Order interface
-                const transformedOrders: Order[] = (data as OrderWithMeal[]).map(order => ({
-                    id: order.id,
-                    meal: {
-                        name: order.meals.name,
-                        price: order.meals.portion_sizes.medium.price,
-                        image_url: '' // We'll need to add image_url to the meals table if needed
-                    },
-                    quantity: order.quantity,
-                    order_time: order.order_time,
-                    status: order.status
-                }));
+                const transformedOrders: Order[] = (data as OrderWithMeal[]).map(order => {
+                    const meal = Array.isArray(order.meals) ? order.meals[0] : order.meals;
+                    return {
+                        id: order.id,
+                        meal: {
+                            name: meal?.name ?? '',
+                            price: meal?.portion_sizes?.medium?.price ?? 0,
+                            image_url: '' // We'll need to add image_url to the meals table if needed
+                        },
+                        quantity: order.quantity,
+                        order_time: order.order_time,
+                        status: order.status
+                    };
+                });
 
                 setOrders(transformedOrders);
             } catch (err) {

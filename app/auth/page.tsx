@@ -63,7 +63,7 @@ export default function AuthPage() {
     const supabase = createClient();
     const { data: authListener } = supabase.auth.onAuthStateChange(
         (event, session) => {
-          if (event === "SIGNED_UP") {
+          if (event === "SIGNED_IN") {
             setIsSignUp(false);
             toast({
               title: "Registrierung erfolgreich!",

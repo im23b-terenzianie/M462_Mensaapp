@@ -23,13 +23,22 @@ interface OrderWithMeal {
     status: string;
     user_id: string;
     meals: {
+        id: string;
         name: string;
+        description: string;
+        ingredients: string[];
+        allergens: string[];
+        country_of_origin: string;
+        image_url: string;
         portion_sizes: {
-            medium: {
+            [key: string]: {
                 price: number;
+                description?: string;
             };
         };
-    };
+        created_at: string;
+        updated_at: string;
+    }[];
 }
 
 export default function OrdersOverviewPage() {
@@ -55,8 +64,16 @@ export default function OrdersOverviewPage() {
                     status,
                     user_id,
                     meals!inner (
+                        id,
                         name,
-                        portion_sizes
+                        description,
+                        ingredients,
+                        allergens,
+                        country_of_origin,
+                        image_url,
+                        portion_sizes,
+                        created_at,
+                        updated_at
                     )
                 `)
                 .neq('status', 'deleted')
@@ -70,16 +87,40 @@ export default function OrdersOverviewPage() {
             }
 
             // Transform the data
-            const transformedOrders: OrderItem[] = (data as OrderWithMeal[]).map(order => ({
-                id: order.id,
-                meal: {
-                    name: order.meals.name,
-                    portion_sizes: order.meals.portion_sizes
-                } as Meal,
-                order_time: order.order_time,
-                quantity: order.quantity,
-                status: order.status
-            }));
+            const transformedOrders: OrderItem[] = (data as unknown as OrderWithMeal[]).map(order => {
+                const meal = Array.isArray(order.meals) ? order.meals[0] : order.meals;
+                // Ensure portion_sizes has description fallback
+                const portionSizesWithDescription = Object.fromEntries(
+                    Object.entries(meal.portion_sizes).map(([key, value]) => {
+                        const v = value as { price: number; description?: string };
+                        return [
+                            key,
+                            {
+                                price: v.price,
+                                description: v.description ?? ''
+                            }
+                        ];
+                    })
+                );
+                return {
+                    id: order.id,
+                    meal: {
+                        id: meal.id,
+                        name: meal.name,
+                        description: meal.description,
+                        ingredients: meal.ingredients,
+                        allergens: meal.allergens,
+                        country_of_origin: meal.country_of_origin,
+                        image_url: meal.image_url,
+                        portion_sizes: portionSizesWithDescription,
+                        created_at: meal.created_at,
+                        updated_at: meal.updated_at
+                    },
+                    order_time: order.order_time,
+                    quantity: order.quantity,
+                    status: order.status
+                };
+            });
 
             setOrders(transformedOrders);
         } catch (error) {

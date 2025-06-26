@@ -195,7 +195,7 @@ export default function AdminOrdersPage() {
                                         <Button
                                             variant="destructive"
                                             size="sm"
-                                            onClick={() => deleteOrder(order.id, 'cancelled')}
+                                            onClick={() => deleteOrder(order.id)}
                                         >
                                             Done
                                         </Button>
